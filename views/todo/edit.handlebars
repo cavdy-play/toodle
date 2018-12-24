@@ -1,0 +1,36 @@
+{{#each errors}}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{text}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{{/each}}
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card card-body">
+            <h3>Edit Todo</h3>
+            <form action="/todo/{{todo.id}}?_method=PUT" method="post">
+                <input type="hidden" name="_method" value="PUT">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" class="form-control" name="title" id="title" value="{{todo.title}}" required>
+                </div>
+                <div class="form-group">
+                    <label for="details">Details</label>
+                    <textarea type="text" class="form-control" rows="7" name="details" id="details" required>{{todo.details}}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tag">Tag</label>
+                    <input type="text" class="form-control" name="tag" id="tag" value="{{todo.tag}}" required>
+                </div>
+                <input type="submit" class="btn btn-primary btn-block" value="Edit Todo">
+            </form>
+        </div>
+    </div>
+    <div class="col-md-6 justify-content-center text-center">
+        <h3>How To Edit</h3>
+        <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Neque vel molestiae nemo eius architecto? Velit reiciendis et, amet at ea delectus eaque assumenda nisi, sed repudiandae quasi dicta! Quo explicabo aperiam eligendi nulla consequatur corrupti in quidem sit pariatur dicta magni similique quis odit atque cumque, nostrum laudantium veniam quaerat velit rem hic ex laboriosam tenetur? Minus, velit, debitis numquam sed recusandae tempore ratione ducimus, ad vel necessitatibus aperiam cupiditate.</p>
+    </div>
+</div>
