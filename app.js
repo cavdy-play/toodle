@@ -5,8 +5,13 @@ const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const flash = require('connect-flash');
 const session = require('express-session');
+// const path = require('path');
 
 const app = express();
+
+// Load routes
+const todos = require('./routes/todo');
+const users = require('./routes/users');
 
 // Connect to mongoose
 mongoose.connect('mongodb://localhost/toodle', {
@@ -14,10 +19,6 @@ mongoose.connect('mongodb://localhost/toodle', {
 }).then(() => {
     console.log('MongoDB Connected...')
 }).catch((err) => console.log(err));
-
-// Load Todo Model
-require('./models/Todo');
-const Todo = mongoose.model('todos');
 
 // Handlebars middleware
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
@@ -36,6 +37,10 @@ app.use(session({
     resave: true,
     saveUninitialized: true
 }));
+
+// express static
+ app.use("/public", express.static(__dirname + '/public'));
+// app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(flash());
 
@@ -60,94 +65,9 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
-// Todo index page
-app.get('/todo', (req, res) => {
-    Todo.find({
-
-    }).sort({
-        date: 'desc'
-    }).then(todos => {
-        res.render('todo/index', {
-            todos: todos
-        });
-    }).catch(err => console.log(err));
-});
-
-// Add Todo
-app.get('/todo/add', (req, res) => {
-    res.render('todo/add');
-});
-
-// Edit Todo
-app.get('/todo/edit/:id', (req, res) => {
-    Todo.findOne({
-        _id: req.params.id
-    }).then(todo => {
-        res.render('todo/edit', {
-            todo: todo
-        });
-    }).catch(err => console.log(err));
-});
-
-// Process Form
-app.post('/todo', (req, res) => {
-    let errors = [];
-    if(!req.body.title) {
-        errors.push({text: 'Please add a title'});
-    } 
-    if(!req.body.details) {
-        errors.push({text: 'Please add some details'});
-    } 
-    if(!req.body.tag) {
-        errors.push({text: 'Please add a tag'});
-    } 
-
-    if(errors.length > 0) {
-        res.render('todo/add', {
-            errors: errors,
-            title: req.body.title,
-            details: req.body.details,
-            tag: req.body.tag
-        });
-    } else {
-        const newTodo = {
-            title: req.body.title,
-            details: req.body.details,
-            tag: req.body.tag
-        }
-        new Todo(newTodo).save().then(todo => {
-            req.flash('success_msg', 'Todo list added');
-            res.redirect('/todo');
-        }).catch(err => console.log(err));
-    }
-});
-
-// Edit form
-app.put('/todo/:id', (req, res) => {
-    Todo.findOne({
-        _id: req.params.id
-    }).then(todo => {
-        // New 
-        todo.title = req.body.title;
-        todo.details = req.body.details;
-        todo.tag = req.body.tag;
-
-        todo.save().then(todo => {
-            req.flash('success_msg', 'Todo list edited');
-            res.redirect('/todo');
-        }).catch(err => console.log(err));
-    }).catch(err => console.log(err));
-});
-
-// Delete todo
-app.delete('/todo/:id', (req, res) => {
-    Todo.deleteOne({
-        _id: req.params.id
-    }).then(() => {
-        req.flash('success_msg', 'Todo list deleted');
-        res.redirect('/todo');
-    }).catch(err => console.log(err));
-});
+// Use routes
+app.use('/todo', todos);
+app.use('/users', users);
 
 const port = 5000;
 
