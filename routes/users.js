@@ -18,8 +18,16 @@ router.get('/register', (req, res) => {
     res.render('users/register');
 });
 
-// Register form post
+// login form post
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local', {
+        successRedirect: '/todo',
+        failureRedirect: '/users/login',
+        failureFlash: true
+    })(req, res, next);
+});
 
+// Register form post
 router.post('/register', (req, res) => {
     let errors = [];
 
@@ -64,6 +72,14 @@ router.post('/register', (req, res) => {
             }
         }).catch(err => console.log(err));
     }
+});
+
+
+// logout user
+router.get('/logout', (req, res) => {
+    req.logOut();
+    req.flash('success_msg', 'Logged Out');
+    res.redirect('/');
 });
 
 // Export

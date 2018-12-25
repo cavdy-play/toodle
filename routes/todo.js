@@ -1,15 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
+const {ensureAuthenticated} = require('../helpers/auth');
 
 // Load Todo Model
 require('../models/Todo');
 const Todo = mongoose.model('todos');
 
 // Todo index page
-router.get('/', (req, res) => {
+router.get('/', ensureAuthenticated, (req, res) => {
     Todo.find({
-
+        user: req.user.id
     }).sort({
         date: 'desc'
     }).then(todos => {
@@ -20,23 +21,28 @@ router.get('/', (req, res) => {
 });
 
 // Add Todo
-router.get('/add', (req, res) => {
+router.get('/add', ensureAuthenticated, (req, res) => {
     res.render('todo/add');
 });
 
 // Edit Todo
-router.get('/edit/:id', (req, res) => {
+router.get('/edit/:id', ensureAuthenticated, (req, res) => {
     Todo.findOne({
         _id: req.params.id
     }).then(todo => {
-        res.render('todo/edit', {
-            todo: todo
-        });
+        if(todo.user != req.user.id) {
+            req.flash('error_msg', 'Not Authorized');
+            res.redirect('/todo');
+        } else {
+            res.render('todo/edit', {
+                todo: todo
+            });
+        }
     }).catch(err => console.log(err));
 });
 
 // Process Form
-router.post('/', (req, res) => {
+router.post('/', ensureAuthenticated, (req, res) => {
     let errors = [];
     if(!req.body.title) {
         errors.push({text: 'Please add a title'});
@@ -59,7 +65,8 @@ router.post('/', (req, res) => {
         const newTodo = {
             title: req.body.title,
             details: req.body.details,
-            tag: req.body.tag
+            tag: req.body.tag,
+            user: req.user.id
         }
         new Todo(newTodo).save().then(todo => {
             req.flash('success_msg', 'Todo list added');
@@ -69,7 +76,7 @@ router.post('/', (req, res) => {
 });
 
 // Edit form
-router.put('/:id', (req, res) => {
+router.put('/:id', ensureAuthenticated, (req, res) => {
     Todo.findOne({
         _id: req.params.id
     }).then(todo => {
@@ -86,7 +93,7 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete todo
-router.delete('/:id', (req, res) => {
+router.delete('/:id', ensureAuthenticated, (req, res) => {
     Todo.deleteOne({
         _id: req.params.id
     }).then(() => {

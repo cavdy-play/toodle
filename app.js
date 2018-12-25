@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const flash = require('connect-flash');
 const session = require('express-session');
+const passport = require('passport');
 // const path = require('path');
 
 const app = express();
@@ -12,6 +13,9 @@ const app = express();
 // Load routes
 const todos = require('./routes/todo');
 const users = require('./routes/users');
+
+// Passport Config
+require('./config/passport')(passport);
 
 // Connect to mongoose
 mongoose.connect('mongodb://localhost/toodle', {
@@ -38,6 +42,10 @@ app.use(session({
     saveUninitialized: true
 }));
 
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 // express static
  app.use("/public", express.static(__dirname + '/public'));
 // app.use(express.static(path.join(__dirname, 'public')));
@@ -49,6 +57,7 @@ app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error');
+    res.locals.user = req.user || null;
     next();
 });
 
